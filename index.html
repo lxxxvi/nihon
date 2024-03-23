@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <title>Nihon</title>
+
+    <script type="text/javascript">
+      const translations = [
+        { "group": "hiragana-vowels", "latin": "a", "japanese": "あ" },
+        { "group": "hiragana-vowels", "latin": "i", "japanese": "い" },
+        { "group": "hiragana-vowels", "latin": "u", "japanese": "う" },
+        { "group": "hiragana-vowels", "latin": "e", "japanese": "え" },
+        { "group": "hiragana-vowels", "latin": "o", "japanese": "お" },
+
+        { "group": "hiragana-k", "latin": "ka", "japanese": "か" },
+        { "group": "hiragana-k", "latin": "ki", "japanese": "き" },
+        { "group": "hiragana-k", "latin": "ku", "japanese": "く" },
+        { "group": "hiragana-k", "latin": "ke", "japanese": "け" },
+        { "group": "hiragana-k", "latin": "ko", "japanese": "こ" },
+
+        { "group": "hiragana-s", "latin": "sa", "japanese": "さ" },
+        { "group": "hiragana-s", "latin": "shi", "japanese": "し" },
+        { "group": "hiragana-s", "latin": "su", "japanese": "す" },
+        { "group": "hiragana-s", "latin": "se", "japanese": "せ" },
+        { "group": "hiragana-s", "latin": "so", "japanese": "そ" },
+
+        { "group": "hiragana-t", "latin": "ta", "japanese": "た" },
+        { "group": "hiragana-t", "latin": "chi", "japanese": "ち" },
+        { "group": "hiragana-t", "latin": "tsu", "japanese": "つ" },
+        { "group": "hiragana-t", "latin": "te", "japanese": "て" },
+        { "group": "hiragana-t", "latin": "to", "japanese": "と" },
+
+        { "group": "hiragana-n", "latin": "na", "japanese": "な" },
+        { "group": "hiragana-n", "latin": "ni", "japanese": "に" },
+        { "group": "hiragana-n", "latin": "nu", "japanese": "ぬ" },
+        { "group": "hiragana-n", "latin": "ne", "japanese": "ね" },
+        { "group": "hiragana-n", "latin": "no", "japanese": "の" }
+      ]
+
+      function cloneLatinDescriptionTermTemplate() {
+        return document.getElementById("latin-description-term").content.cloneNode(true);
+      }
+
+      function cloneJapaneseDescriptionDetailTemplate() {
+        return document.getElementById("japanese-description-detail").content.cloneNode(true);
+      }
+
+      function cloneTranslationDescriptionListTemplate() {
+        return document.getElementById("translation-description-list").content.cloneNode(true);
+      }
+
+      function renderTranslationDescriptionList(latin, japanese) {
+        let latinDescriptionTermNode = cloneLatinDescriptionTermTemplate();
+        latinDescriptionTermNode.querySelector("span").textContent = latin;
+
+        let japaneseDescriptionDetailNode = cloneJapaneseDescriptionDetailTemplate();
+        japaneseDescriptionDetailNode.querySelector("span").textContent = japanese;
+
+        let translationDescriptionListNode = cloneTranslationDescriptionListTemplate();
+        translationDescriptionListNode.querySelector("dt").replaceWith(latinDescriptionTermNode);
+        translationDescriptionListNode.querySelector("dd").replaceWith(japaneseDescriptionDetailNode);
+
+        return translationDescriptionListNode;
+      }
+
+      function shuffle() {
+        let translationsClone = [...translations];
+
+        let translationDescriptionLists = [];
+
+        for(let i = 0; i < 5; i++) {
+          let randomIndex = Math.floor(Math.random() * translationsClone.length)
+          let selectedTranslation = translationsClone[randomIndex]
+
+          translationsClone = translationsClone.filter(element => element != selectedTranslation)
+
+          translationDescriptionLists.push(
+            renderTranslationDescriptionList(selectedTranslation["latin"], selectedTranslation["japanese"])
+          );
+        }
+
+        document.getElementById("letters-board").replaceChildren(...translationDescriptionLists);
+      }
+
+      function showSolution() {
+        document.querySelectorAll("#letters-board .hidden").forEach((element) => element.classList.remove("hidden"));
+      }
+
+      document.addEventListener("DOMContentLoaded", (event) => {
+        shuffle();
+      });
+    </script>
+  </head>
+
+  <body class="h-screen">
+    <template id="latin-description-term">
+      <dt class="rounded-xl bg-pink-200 h-24 w-24 grid place-content-center">
+        <span class="text-3xl">[[LATIN]]</span>
+      </dt>
+    </template>
+
+    <template id="japanese-description-detail">
+      <dd class="rounded-xl bg-pink-300 h-24 w-24 grid place-content-center hidden">
+        <span class="text-3xl">[[JAPANESE]]</span>
+      </dd>
+    </template>
+
+    <template id="translation-description-list">
+      <dl class="inline-flex justify-center gap-x-4">
+        <dt>[[LATIN-DESCRIPTION-TERM]]</dt>
+        <dd>[[JAPANESE-DESCRIPTION-DETAIL]]</dd>
+      </dl>
+    </template>
+
+    <main class="h-full flex flex-col">
+      <div class="h-full grow flex flex-col justify-evenly" id="letters-board">
+      </div>
+
+      <div class="min-h-24 flex justify-center px-4 pb-2 gap-x-4">
+        <button class="w-full rounded-xl bg-yellow-200 text-2xl" onclick="shuffle();">シャッフル</button>
+        <button class="w-full rounded-xl bg-yellow-200 text-2xl" onclick="showSolution();">解決</button>
+      </div>
+    </main>
+  </body>
+</html>
