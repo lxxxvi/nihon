@@ -7,43 +7,55 @@
     <title>Nihon</title>
 
     <script type="text/javascript">
-      const translations = [
-        { "group": "hiragana-vowels", "latin": "a", "japanese": "あ" },
-        { "group": "hiragana-vowels", "latin": "i", "japanese": "い" },
-        { "group": "hiragana-vowels", "latin": "u", "japanese": "う" },
-        { "group": "hiragana-vowels", "latin": "e", "japanese": "え" },
-        { "group": "hiragana-vowels", "latin": "o", "japanese": "お" },
+      const translations = {
+        "hiragana-vowels": [
+          { "latin": "a", "japanese": "あ" },
+          { "latin": "i", "japanese": "い" },
+          { "latin": "u", "japanese": "う" },
+          { "latin": "e", "japanese": "え" },
+          { "latin": "o", "japanese": "お" }
+        ],
 
-        { "group": "hiragana-k", "latin": "ka", "japanese": "か" },
-        { "group": "hiragana-k", "latin": "ki", "japanese": "き" },
-        { "group": "hiragana-k", "latin": "ku", "japanese": "く" },
-        { "group": "hiragana-k", "latin": "ke", "japanese": "け" },
-        { "group": "hiragana-k", "latin": "ko", "japanese": "こ" },
+        "hiragana-k": [
+          { "latin": "ka", "japanese": "か" },
+          { "latin": "ki", "japanese": "き" },
+          { "latin": "ku", "japanese": "く" },
+          { "latin": "ke", "japanese": "け" },
+          { "latin": "ko", "japanese": "こ" }
+        ],
 
-        { "group": "hiragana-s", "latin": "sa", "japanese": "さ" },
-        { "group": "hiragana-s", "latin": "shi", "japanese": "し" },
-        { "group": "hiragana-s", "latin": "su", "japanese": "す" },
-        { "group": "hiragana-s", "latin": "se", "japanese": "せ" },
-        { "group": "hiragana-s", "latin": "so", "japanese": "そ" },
+        "hiragana-s": [
+          { "latin": "sa", "japanese": "さ" },
+          { "latin": "shi", "japanese": "し" },
+          { "latin": "su", "japanese": "す" },
+          { "latin": "se", "japanese": "せ" },
+          { "latin": "so", "japanese": "そ" }
+        ],
 
-        { "group": "hiragana-t", "latin": "ta", "japanese": "た" },
-        { "group": "hiragana-t", "latin": "chi", "japanese": "ち" },
-        { "group": "hiragana-t", "latin": "tsu", "japanese": "つ" },
-        { "group": "hiragana-t", "latin": "te", "japanese": "て" },
-        { "group": "hiragana-t", "latin": "to", "japanese": "と" },
+        "hiragana-t": [
+          { "latin": "ta", "japanese": "た" },
+          { "latin": "chi", "japanese": "ち" },
+          { "latin": "tsu", "japanese": "つ" },
+          { "latin": "te", "japanese": "て" },
+          { "latin": "to", "japanese": "と" }
+        ],
 
-        { "group": "hiragana-n", "latin": "na", "japanese": "な" },
-        { "group": "hiragana-n", "latin": "ni", "japanese": "に" },
-        { "group": "hiragana-n", "latin": "nu", "japanese": "ぬ" },
-        { "group": "hiragana-n", "latin": "ne", "japanese": "ね" },
-        { "group": "hiragana-n", "latin": "no", "japanese": "の" },
+        "hiragana-n": [
+          { "latin": "na", "japanese": "な" },
+          { "latin": "ni", "japanese": "に" },
+          { "latin": "nu", "japanese": "ぬ" },
+          { "latin": "ne", "japanese": "ね" },
+          { "latin": "no", "japanese": "の" }
+        ],
 
-        { "group": "hiragana-h", "latin": "ha", "japanese": "は" },
-        { "group": "hiragana-h", "latin": "hi", "japanese": "ひ" },
-        { "group": "hiragana-h", "latin": "fu", "japanese": "ふ" },
-        { "group": "hiragana-h", "latin": "he", "japanese": "へ" },
-        { "group": "hiragana-h", "latin": "ho", "japanese": "ほ" }
-      ]
+        "hiragana-h": [
+          { "latin": "ha", "japanese": "は" },
+          { "latin": "hi", "japanese": "ひ" },
+          { "latin": "fu", "japanese": "ふ" },
+          { "latin": "he", "japanese": "へ" },
+          { "latin": "ho", "japanese": "ほ" }
+        ]
+      }
 
       function cloneLatinDescriptionTermTemplate() {
         return document.getElementById("latin-description-term").content.cloneNode(true);
@@ -79,8 +91,8 @@
         return document.getElementById("letter-group-description-detail").content.cloneNode(true);
       }
 
-      function groupActivated() {
-        return false;
+      function letterGroupEnabled(groupName) {
+        return getEnabledLetterGroups().includes(groupName);
       }
 
       function cloneLetterGroupDescriptionListTemplate() {
@@ -100,7 +112,7 @@
 
         let letterGroupDescriptionListNode = cloneLetterGroupDescriptionListTemplate();
         letterGroupDescriptionListNode.querySelector(`input[type="checkbox"]`).setAttribute("value", groupName)
-        if (groupActivated(groupName)) {
+        if (letterGroupEnabled(groupName)) {
           letterGroupDescriptionListNode.querySelector(`input[type="checkbox"]`).setAttribute("checked", "checked")
         } else {
           letterGroupDescriptionListNode.querySelector(`input[type="checkbox"]`).removeAttribute("checked")
@@ -111,31 +123,29 @@
         return letterGroupDescriptionListNode;
       }
 
-      function lettersByGroup() {
-        return translations.reduce(
-          (object, item) => {
-            if(!object.hasOwnProperty(item["group"])) {
-              object[item["group"]] = [];
-            }
+      function getEnabledLetterGroups() {
+        return JSON.parse(localStorage.getItem("enabledLetterGroups") || "[]");
+      }
 
-            object[item["group"]].push(item);
-
-            return object;
-          },
-          {}
-        )
+      function setEnabledLetterGroups(values) {
+        localStorage.setItem("enabledLetterGroups", JSON.stringify(values));
       }
 
       function shuffleBoard() {
-        let translationsClone = [...translations];
+        const enabledLetterGroups = getEnabledLetterGroups();
+
+        let selectedTranslations = enabledLetterGroups.reduce((array, selectedLetterGroup) => {
+          array = array.concat(translations[selectedLetterGroup] || []);
+          return array;
+        }, []);
 
         let translationDescriptionLists = [];
 
         for(let i = 0; i < 5; i++) {
-          let randomIndex = Math.floor(Math.random() * translationsClone.length)
-          let selectedTranslation = translationsClone[randomIndex]
+          let randomIndex = Math.floor(Math.random() * selectedTranslations.length)
+          let selectedTranslation = selectedTranslations[randomIndex]
 
-          translationsClone = translationsClone.filter(element => element != selectedTranslation)
+          selectedTranslations = selectedTranslations.filter(element => element != selectedTranslation)
 
           translationDescriptionLists.push(
             renderTranslationDescriptionList(selectedTranslation["latin"], selectedTranslation["japanese"])
@@ -149,17 +159,52 @@
         document.querySelectorAll("#letters-board dd").forEach((element) => element.classList.toggle("hidden"));
       }
 
+      function handleLetterGroupCheckboxClick() {
+        const newEnabledLetterGroups = Array.from(
+          document.querySelectorAll(".letter-group-checkbox")
+        ).filter((element) => element.checked).map((element) => element.value);
+
+        setEnabledLetterGroups(newEnabledLetterGroups);
+
+        renderSettingsSummary();
+      }
+
+      function initUserData() {
+        const enabledLetterGroups = getEnabledLetterGroups();
+
+        if (enabledLetterGroups.length > 0) {
+          setEnabledLetterGroups(enabledLetterGroups.filter((item) => translations.hasOwnProperty(item)));
+        } else {
+          setEnabledLetterGroups(Object.keys(translations));
+        }
+      }
+
+      function renderSettingsSummary() {
+        const totalGroups = Object.keys(translations).length
+        const enabledGroups = getEnabledLetterGroups().length;
+
+        const text = `${enabledGroups} of ${totalGroups} groups enabled`;
+
+        document.querySelector("#settings-summary").textContent = text;
+      }
+
       document.addEventListener("DOMContentLoaded", (event) => {
+        initUserData();
         shuffleBoard();
         setupDialog();
+        renderSettingsSummary();
       });
 
       function loadLetterGroupSettings() {
-        let letterGroups = Object.entries(lettersByGroup()).map(
+        let letterGroups = Object.entries(translations).map(
           ([groupName, groupElements]) => renderLetterGroupDescriptionList(groupName, groupElements)
         );
 
-        document.getElementById("letter-groups").replaceChildren(...letterGroups)
+        document.getElementById("letter-groups").replaceChildren(...letterGroups);
+
+        document.querySelectorAll(`.letter-group-checkbox`).forEach((checkboxElement) => {
+          checkboxElement.addEventListener("click", handleLetterGroupCheckboxClick);
+        })
       }
 
       function setupDialog() {
@@ -197,6 +242,7 @@
           </div>
         </div>
       </dialog>
+      <div class="text-center text-sm text-gray-500" id="settings-summary">[[SETTINGS SUMMARY]]</div>
       <div class="grow flex flex-col gap-y-4 justify-evenly" id="letters-board"></div>
 
       <div class="min-h-24 flex justify-center px-4 pb-2 gap-x-4">
@@ -237,7 +283,7 @@
     <template id="letter-group-description-list">
       <div class="flex py-4 items-end gap-4">
         <div>
-          <input type="checkbox" checked class="w-6 h-6" value="[[UNKNOWN]]"/>
+          <input type="checkbox" checked class="letter-group-checkbox w-6 h-6" value="[[UNKNOWN]]" />
         </div>
         <dl class="grow">
           <dt>[[LETTER-GROUP-DESCRIPTION-TERM]]</dt>
