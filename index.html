@@ -79,6 +79,10 @@
         return document.getElementById("letter-group-description-detail").content.cloneNode(true);
       }
 
+      function groupActivated() {
+        return false;
+      }
+
       function cloneLetterGroupDescriptionListTemplate() {
         return document.getElementById("letter-group-description-list").content.cloneNode(true);
       }
@@ -95,6 +99,12 @@
         }));
 
         let letterGroupDescriptionListNode = cloneLetterGroupDescriptionListTemplate();
+        letterGroupDescriptionListNode.querySelector(`input[type="checkbox"]`).setAttribute("value", groupName)
+        if (groupActivated(groupName)) {
+          letterGroupDescriptionListNode.querySelector(`input[type="checkbox"]`).setAttribute("checked", "checked")
+        } else {
+          letterGroupDescriptionListNode.querySelector(`input[type="checkbox"]`).removeAttribute("checked")
+        }
         letterGroupDescriptionListNode.querySelector("dt").replaceWith(letterGroupDescriptionTermNode);
         letterGroupDescriptionListNode.querySelector("dd").replaceWith(letterGroupDescriptionDetailNode);
 
@@ -141,31 +151,60 @@
 
       document.addEventListener("DOMContentLoaded", (event) => {
         shuffleBoard();
+        setupDialog();
+      });
 
-        const dialog = document.querySelector("dialog");
-        const showButton = document.querySelector(".open-dialog");
-        const closeButton = document.querySelector("dialog button");
-
-        // "Show the dialog" button opens the dialog modally
-        showButton.addEventListener("click", () => {
-          dialog.showModal();
-        });
-
-        // "Close" button closes the dialog
-        closeButton.addEventListener("click", () => {
-          dialog.close();
-        });
-
+      function loadLetterGroupSettings() {
         let letterGroups = Object.entries(lettersByGroup()).map(
           ([groupName, groupElements]) => renderLetterGroupDescriptionList(groupName, groupElements)
         );
 
         document.getElementById("letter-groups").replaceChildren(...letterGroups)
-      });
+      }
+
+      function setupDialog() {
+        const dialog = document.querySelector("dialog");
+        const showButton = document.querySelector(".open-dialog");
+        const closeButton = document.querySelector("dialog button");
+
+        showButton.addEventListener("click", () => {
+          loadLetterGroupSettings();
+          dialog.showModal();
+        });
+
+        closeButton.addEventListener("click", () => dialog.close());
+      }
     </script>
   </head>
 
-  <body class="h-full py-4">
+  <body class="h-svh">
+    <main class="h-full flex flex-col gap-y-4">
+      <button class="open-dialog text-gray-400 w-8 h-8 fixed top-2 right-2">
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M9.594 3.94c.09-.542.56-.94 1.11-.94h2.593c.55 0 1.02.398 1.11.94l.213 1.281c.063.374.313.686.645.87.074.04.147.083.22.127.325.196.72.257 1.075.124l1.217-.456a1.125 1.125 0 0 1 1.37.49l1.296 2.247a1.125 1.125 0 0 1-.26 1.431l-1.003.827c-.293.241-.438.613-.43.992a7.723 7.723 0 0 1 0 .255c-.008.378.137.75.43.991l1.004.827c.424.35.534.955.26 1.43l-1.298 2.247a1.125 1.125 0 0 1-1.369.491l-1.217-.456c-.355-.133-.75-.072-1.076.124a6.47 6.47 0 0 1-.22.128c-.331.183-.581.495-.644.869l-.213 1.281c-.09.543-.56.94-1.11.94h-2.594c-.55 0-1.019-.398-1.11-.94l-.213-1.281c-.062-.374-.312-.686-.644-.87a6.52 6.52 0 0 1-.22-.127c-.325-.196-.72-.257-1.076-.124l-1.217.456a1.125 1.125 0 0 1-1.369-.49l-1.297-2.247a1.125 1.125 0 0 1 .26-1.431l1.004-.827c.292-.24.437-.613.43-.991a6.932 6.932 0 0 1 0-.255c.007-.38-.138-.751-.43-.992l-1.004-.827a1.125 1.125 0 0 1-.26-1.43l1.297-2.247a1.125 1.125 0 0 1 1.37-.491l1.216.456c.356.133.751.072 1.076-.124.072-.044.146-.086.22-.128.332-.183.582-.495.644-.869l.214-1.28Z" />
+        <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" />
+      </svg>
+
+      </button>
+      <dialog class="max-h-svh">
+        <div class="flex flex-col">
+          <div class="flex flex-col overflow-hidden">
+            <div class="grow overflow-y-scroll max-h-96 px-8" id="letter-groups"></div>
+
+            <div>
+              <button class="min-h-16 w-full bg-blue-300 text-2xl">近い</button>
+            </div>
+          </div>
+        </div>
+      </dialog>
+      <div class="grow flex flex-col gap-y-4 justify-evenly" id="letters-board"></div>
+
+      <div class="min-h-24 flex justify-center px-4 pb-2 gap-x-4">
+        <button class="w-full rounded-xl bg-yellow-200 text-2xl" onclick="shuffleBoard();">シャッフル</button>
+        <button class="w-full rounded-xl bg-yellow-200 text-2xl" onclick="toggleSolution();">解決</button>
+      </div>
+    </main>
+
     <template id="latin-description-term">
       <dt class="rounded-xl bg-pink-200 h-24 w-24 grid place-content-center">
         <span class="text-3xl">[[LATIN]]</span>
@@ -186,47 +225,25 @@
     </template>
 
     <template id="letter-group-description-term">
-      <dt class="text-center">
+      <dt>
         <span class="text-xs opacity-70">[[LETTER-GROUP-NAME]]</span>
       </dt>
     </template>
 
     <template id="letter-group-description-detail">
-      <dd class="text-center text-3xl"></dd>
+      <dd class="text-3xl"></dd>
     </template>
 
     <template id="letter-group-description-list">
-      <dl class="py-4">
-        <dt>[[LETTER-GROUP-DESCRIPTION-TERM]]</dt>
-        <dd>[[LETTER-GROUP-DESCRIPTION-DETAIL]]</dd>
-      </dl>
-    </template>
-
-    <main class="h-full flex flex-col gap-y-4">
-      <button class="open-dialog text-gray-400 w-8 h-8 fixed top-2 right-2">
-        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
-        <path stroke-linecap="round" stroke-linejoin="round" d="M9.594 3.94c.09-.542.56-.94 1.11-.94h2.593c.55 0 1.02.398 1.11.94l.213 1.281c.063.374.313.686.645.87.074.04.147.083.22.127.325.196.72.257 1.075.124l1.217-.456a1.125 1.125 0 0 1 1.37.49l1.296 2.247a1.125 1.125 0 0 1-.26 1.431l-1.003.827c-.293.241-.438.613-.43.992a7.723 7.723 0 0 1 0 .255c-.008.378.137.75.43.991l1.004.827c.424.35.534.955.26 1.43l-1.298 2.247a1.125 1.125 0 0 1-1.369.491l-1.217-.456c-.355-.133-.75-.072-1.076.124a6.47 6.47 0 0 1-.22.128c-.331.183-.581.495-.644.869l-.213 1.281c-.09.543-.56.94-1.11.94h-2.594c-.55 0-1.019-.398-1.11-.94l-.213-1.281c-.062-.374-.312-.686-.644-.87a6.52 6.52 0 0 1-.22-.127c-.325-.196-.72-.257-1.076-.124l-1.217.456a1.125 1.125 0 0 1-1.369-.49l-1.297-2.247a1.125 1.125 0 0 1 .26-1.431l1.004-.827c.292-.24.437-.613.43-.991a6.932 6.932 0 0 1 0-.255c.007-.38-.138-.751-.43-.992l-1.004-.827a1.125 1.125 0 0 1-.26-1.43l1.297-2.247a1.125 1.125 0 0 1 1.37-.491l1.216.456c.356.133.751.072 1.076-.124.072-.044.146-.086.22-.128.332-.183.582-.495.644-.869l.214-1.28Z" />
-        <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" />
-      </svg>
-
-      </button>
-      <dialog>
-        <div class="flex flex-col">
-          <div class="flex flex-col overflow-hidden">
-            <div class="grow overflow-y-scroll px-8" id="letter-groups"></div>
-
-            <div>
-              <button class="min-h-16 w-full bg-blue-300 text-2xl">近い</button>
-            </div>
-          </div>
+      <div class="flex py-4 items-end gap-4">
+        <div>
+          <input type="checkbox" checked class="w-6 h-6" value="[[UNKNOWN]]"/>
         </div>
-      </dialog>
-      <div class="grow flex flex-col gap-y-4 justify-evenly" id="letters-board"></div>
-
-      <div class="min-h-24 flex justify-center px-4 pb-2 gap-x-4">
-        <button class="w-full rounded-xl bg-yellow-200 text-2xl" onclick="shuffleBoard();">シャッフル</button>
-        <button class="w-full rounded-xl bg-yellow-200 text-2xl" onclick="toggleSolution();">解決</button>
+        <dl class="grow">
+          <dt>[[LETTER-GROUP-DESCRIPTION-TERM]]</dt>
+          <dd>[[LETTER-GROUP-DESCRIPTION-DETAIL]]</dd>
+        </dl>
       </div>
-    </main>
+    </template>
   </body>
 </html>
