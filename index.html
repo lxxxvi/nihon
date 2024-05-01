@@ -332,13 +332,15 @@
       function renderTranslationDescriptionList(translation) {
         let latinDescriptionTermNode = cloneLatinDescriptionTermTemplate();
 
-        const colorClass = translation["syllabary"] == "katakana" ? "bg-emerald-200" : "bg-pink-300"
+        const dtColorClass = translation["syllabary"] == "katakana" ? "bg-emerald-200" : "bg-pink-200"
+        const ddColorClass = translation["syllabary"] == "katakana" ? "bg-emerald-400" : "bg-pink-400"
 
-        latinDescriptionTermNode.querySelector("dt").classList.add(colorClass)
+        latinDescriptionTermNode.querySelector("dt").classList.add(dtColorClass);
         latinDescriptionTermNode.querySelector("span").textContent = translation["latin"];
 
 
         let japaneseDescriptionDetailNode = cloneJapaneseDescriptionDetailTemplate();
+        japaneseDescriptionDetailNode.querySelector("dd").classList.add(ddColorClass);
         japaneseDescriptionDetailNode.querySelector("span").textContent = translation["japanese"];
 
         let translationDescriptionListNode = cloneTranslationDescriptionListTemplate();
@@ -523,7 +525,7 @@
     </template>
 
     <template id="japanese-description-detail">
-      <dd class="rounded-xl bg-pink-300 h-24 w-24 grid place-content-center hidden">
+      <dd class="rounded-xl h-24 w-24 grid place-content-center hidden">
         <span class="text-3xl">[[JAPANESE]]</span>
       </dd>
     </template>
